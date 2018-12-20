@@ -94,7 +94,7 @@ private class Emitter(circuit: Circuit) {
         s"skip"
       case c: CForBegin =>
         indent()
-        s"cFor ${c.pred.fullName(ctx)} :"
+        s"cFor ${c.min}, ${c.extent}, ${c.stride} :"
       case c: CForEnd =>
         unindent()
         s"skip"

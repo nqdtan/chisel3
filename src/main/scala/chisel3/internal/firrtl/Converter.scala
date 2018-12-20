@@ -137,7 +137,7 @@ private[chisel3] object Converter {
   // TODO we should probably have a different structure in the IR to close elses
   private case class WhenFrame(when: fir.Conditionally, outer: Queue[fir.Statement], alt: Boolean)
 
-  private case class CForFrame(cFor: fir.Conditionally, outer: Queue[fir.Statement])
+  private case class CForFrame(cFor: fir.CFor, outer: Queue[fir.Statement])
 
   /** Convert Chisel IR Commands into FIRRTL Statements
     *
@@ -191,14 +191,14 @@ private[chisel3] object Converter {
             val cmdsx = if (depth > 1) OtherwiseEnd(info, depth - 1) +: cmds.tail else cmds.tail
             rec(scope.head.outer :+ when, scope.tail, scopeCFor)(cmdsx)
 
-          case CForBegin(info, pred) =>
-            val cFor = fir.Conditionally(convert(info), convert(pred, ctx),
-                                         fir.EmptyStmt, fir.EmptyStmt)
+          case CForBegin(info, min, extent, stride) =>
+            val cFor = fir.CFor(convert(info), min, extent, stride,
+                                fir.EmptyStmt)
             val frameCFor = CForFrame(cFor, acc)
             rec(Queue.empty, scope, frameCFor +: scopeCFor)(cmds.tail)
           case CForEnd(info, depth) =>
             val frameCFor = scopeCFor.head
-            val cFor = frameCFor.cFor.copy(conseq = fir.Block(acc))
+            val cFor = frameCFor.cFor.copy(body = fir.Block(acc))
             val cmdsx = if (depth > 0) CForEnd(info, depth - 1) +: cmds.tail  else cmds.tail
             rec(frameCFor.outer :+ cFor, scope, scopeCFor.tail)(cmdsx)
         }

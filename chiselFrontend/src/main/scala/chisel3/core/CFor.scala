@@ -10,13 +10,13 @@ import chisel3.internal.firrtl._
 import chisel3.internal.sourceinfo.{SourceInfo}
 
 object cFor {  // scalastyle:ignore object.name
-  def apply(cond: => Bool)(block: => Unit)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): CForContext = {
-    new CForContext(sourceInfo, Some(() => cond), block)
+  def apply(min: => Int, extent: => Int, stride: => Int)(block: => Unit)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): CForContext = {
+    new CForContext(sourceInfo, min, extent, stride, block)
   }
 }
 
-final class CForContext(sourceInfo: SourceInfo, cond: Option[() => Bool], block: => Unit, firrtlDepth: Int = 0) {
-  cond.foreach( c => pushCommand(CForBegin(sourceInfo, c().ref)) )
+final class CForContext(sourceInfo: SourceInfo, min: => Int, extent: => Int, stride: => Int, block: => Unit, firrtlDepth: Int = 0) {
+  pushCommand(CForBegin(sourceInfo, min, extent, stride))
   Builder.cForDepth += 1
   try {
     block
@@ -27,5 +27,5 @@ final class CForContext(sourceInfo: SourceInfo, cond: Option[() => Bool], block:
       )
   }
   Builder.cForDepth -= 1
-  cond.foreach( c => pushCommand(CForEnd(sourceInfo,firrtlDepth)) )
+  pushCommand(CForEnd(sourceInfo,firrtlDepth))
 }
