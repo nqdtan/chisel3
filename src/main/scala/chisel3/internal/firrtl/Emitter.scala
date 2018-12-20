@@ -92,6 +92,12 @@ private class Emitter(circuit: Circuit) {
         // Chisel otherwise: ends all FIRRTL associated a Chisel when, resetting indent level
         for (i <- 0 until o.firrtlDepth) { unindent() }
         s"skip"
+      case c: CForBegin =>
+        indent()
+        s"cFor ${c.pred.fullName(ctx)} :"
+      case c: CForEnd =>
+        unindent()
+        s"skip"
     }
     firrtlLine + e.sourceInfo.makeMessage(" " + _)
   }

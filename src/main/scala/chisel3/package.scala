@@ -306,6 +306,9 @@ package object chisel3 {    // scalastyle:ignore package.object.name
   val when = chisel3.core.when
   type WhenContext = chisel3.core.WhenContext
 
+  val cFor = chisel3.core.cFor
+  type CForContext = chisel3.core.CForContext
+
   type Printable = chisel3.core.Printable
   val Printable = chisel3.core.Printable
   type Printables = chisel3.core.Printables

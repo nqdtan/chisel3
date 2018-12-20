@@ -137,6 +137,8 @@ private[chisel3] object Converter {
   // TODO we should probably have a different structure in the IR to close elses
   private case class WhenFrame(when: fir.Conditionally, outer: Queue[fir.Statement], alt: Boolean)
 
+  private case class CForFrame(cFor: fir.Conditionally, outer: Queue[fir.Statement])
+
   /** Convert Chisel IR Commands into FIRRTL Statements
     *
     * @note ctx is needed because references to ports translate differently when referenced within
@@ -148,7 +150,8 @@ private[chisel3] object Converter {
   def convert(cmds: Seq[Command], ctx: Component): fir.Statement = {
     @tailrec
     def rec(acc: Queue[fir.Statement],
-            scope: List[WhenFrame])
+            scope: List[WhenFrame],
+            scopeCFor: List[CForFrame])
            (cmds: Seq[Command]): Seq[fir.Statement] = {
       if (cmds.isEmpty) {
         assert(scope.isEmpty)
@@ -156,14 +159,14 @@ private[chisel3] object Converter {
       } else convertSimpleCommand(cmds.head, ctx) match {
         // Most Commands map 1:1
         case Some(stmt) =>
-          rec(acc :+ stmt, scope)(cmds.tail)
+          rec(acc :+ stmt, scope, scopeCFor)(cmds.tail)
         // When scoping logic does not map 1:1 and requires pushing/popping WhenFrames
         // Please see WhenFrame for more details
         case None => cmds.head match {
           case WhenBegin(info, pred) =>
             val when = fir.Conditionally(convert(info), convert(pred, ctx), fir.EmptyStmt, fir.EmptyStmt)
             val frame = WhenFrame(when, acc, false)
-            rec(Queue.empty, frame +: scope)(cmds.tail)
+            rec(Queue.empty, frame +: scope, scopeCFor)(cmds.tail)
           case WhenEnd(info, depth, _) =>
             val frame = scope.head
             val when = if (frame.alt) frame.when.copy(alt = fir.Block(acc))
@@ -172,13 +175,13 @@ private[chisel3] object Converter {
             cmds.tail.headOption match {
               case Some(AltBegin(_)) =>
                 assert(!frame.alt, "Internal Error! Unexpected when structure!") // Only 1 else per when
-                rec(Queue.empty, frame.copy(when = when, alt = true) +: scope.tail)(cmds.drop(2))
+                rec(Queue.empty, frame.copy(when = when, alt = true) +: scope.tail, scopeCFor)(cmds.drop(2))
               case _ => // Not followed by otherwise
                 // If depth > 0 then we need to close multiple When scopes so we add a new WhenEnd
                 // If we're nested we need to add more WhenEnds to ensure each When scope gets
                 // properly closed
                 val cmdsx = if (depth > 0) WhenEnd(info, depth - 1, false) +: cmds.tail  else cmds.tail
-                rec(frame.outer :+ when, scope.tail)(cmdsx)
+                rec(frame.outer :+ when, scope.tail, scopeCFor)(cmdsx)
             }
           case OtherwiseEnd(info, depth) =>
             val frame = scope.head
@@ -186,11 +189,22 @@ private[chisel3] object Converter {
             // TODO For some reason depth == 1 indicates the last closing otherwise whereas
             //  depth == 0 indicates last closing when
             val cmdsx = if (depth > 1) OtherwiseEnd(info, depth - 1) +: cmds.tail else cmds.tail
-            rec(scope.head.outer :+ when, scope.tail)(cmdsx)
+            rec(scope.head.outer :+ when, scope.tail, scopeCFor)(cmdsx)
+
+          case CForBegin(info, pred) =>
+            val cFor = fir.Conditionally(convert(info), convert(pred, ctx),
+                                         fir.EmptyStmt, fir.EmptyStmt)
+            val frameCFor = CForFrame(cFor, acc)
+            rec(Queue.empty, scope, frameCFor +: scopeCFor)(cmds.tail)
+          case CForEnd(info, depth) =>
+            val frameCFor = scopeCFor.head
+            val cFor = frameCFor.cFor.copy(conseq = fir.Block(acc))
+            val cmdsx = if (depth > 0) CForEnd(info, depth - 1) +: cmds.tail  else cmds.tail
+            rec(frameCFor.outer :+ cFor, scope, scopeCFor.tail)(cmdsx)
         }
       }
     }
-    fir.Block(rec(Queue.empty, List.empty)(cmds))
+    fir.Block(rec(Queue.empty, List.empty, List.empty)(cmds))
   }
 
   def convert(width: Width): fir.Width = width match {
