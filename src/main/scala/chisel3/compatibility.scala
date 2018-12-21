@@ -356,7 +356,7 @@ package object Chisel {     // scalastyle:ignore package.object.name
   type WhenContext = chisel3.core.WhenContext
 
   val cFor = chisel3.core.cFor
-  type CForContext = chisel3.core.CForContext
+  type CForContext[T <: Data] = chisel3.core.CForContext[T]
 
   implicit class fromBigIntToLiteral(x: BigInt) extends chisel3.core.fromBigIntToLiteral(x)
   implicit class fromtIntToLiteral(x: Int) extends chisel3.core.fromIntToLiteral(x)

@@ -307,7 +307,7 @@ package object chisel3 {    // scalastyle:ignore package.object.name
   type WhenContext = chisel3.core.WhenContext
 
   val cFor = chisel3.core.cFor
-  type CForContext = chisel3.core.CForContext
+  type CForContext[T <: Data] = chisel3.core.CForContext[T]
 
   type Printable = chisel3.core.Printable
   val Printable = chisel3.core.Printable

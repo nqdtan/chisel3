@@ -191,8 +191,8 @@ private[chisel3] object Converter {
             val cmdsx = if (depth > 1) OtherwiseEnd(info, depth - 1) +: cmds.tail else cmds.tail
             rec(scope.head.outer :+ when, scope.tail, scopeCFor)(cmdsx)
 
-          case CForBegin(info, min, extent, stride) =>
-            val cFor = fir.CFor(convert(info), min, extent, stride,
+          case CForBegin(info, index, min, extent, stride) =>
+            val cFor = fir.CFor(convert(info), convert(index, ctx), min, extent, stride,
                                 fir.EmptyStmt)
             val frameCFor = CForFrame(cFor, acc)
             rec(Queue.empty, scope, frameCFor +: scopeCFor)(cmds.tail)
