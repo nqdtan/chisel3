@@ -10,16 +10,22 @@ import chisel3.internal.firrtl._
 import chisel3.internal.sourceinfo.{SourceInfo}
 
 object cFor {  // scalastyle:ignore object.name
-  def apply[T <: Data](index: T,
-                       min: => Int,
-                       extent: => Int,
-                       stride: => Int)(block: => Unit)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): CForContext[T] = {
+  def apply[T <: Data](index:  T,
+                       min:    T,
+                       extent: T,
+                       stride: T)(block: => Unit)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): CForContext[T] = {
     new CForContext(sourceInfo, index, min, extent, stride, block)
   }
 }
 
-final class CForContext[T <: Data](sourceInfo: SourceInfo, index: T, min: => Int, extent: => Int, stride: => Int, block: => Unit, firrtlDepth: Int = 0) {
-  pushCommand(CForBegin(sourceInfo, index.ref, min, extent, stride))
+final class CForContext[T <: Data](sourceInfo: SourceInfo,
+                                   index:  T,
+                                   min:    T,
+                                   extent: T,
+                                   stride: T,
+                                   block: => Unit,
+                                   firrtlDepth: Int = 0) {
+  pushCommand(CForBegin(sourceInfo, index.ref, min.ref, extent.ref, stride.ref))
   Builder.cForDepth += 1
   try {
     block

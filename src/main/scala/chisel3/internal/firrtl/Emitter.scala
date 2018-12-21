@@ -94,8 +94,11 @@ private class Emitter(circuit: Circuit) {
         s"skip"
       case c: CForBegin =>
         indent()
-        val indexName = s"${c.index.fullName(ctx)}"
-        s"cFor ${indexName} <- (${c.min}, ${c.min} + ${c.extent}, ${c.stride}) :"
+        val index = s"${c.index.fullName(ctx)}"
+        val min = s"${c.min.fullName(ctx)}"
+        val extent = s"${c.extent.fullName(ctx)}"
+        val stride = s"${c.stride.fullName(ctx)}"
+        s"cFor ${index} <- (${min}, ${min} + ${extent}, ${stride}) :"
       case c: CForEnd =>
         unindent()
         s"skip"

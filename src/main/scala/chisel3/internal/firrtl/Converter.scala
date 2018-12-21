@@ -192,7 +192,11 @@ private[chisel3] object Converter {
             rec(scope.head.outer :+ when, scope.tail, scopeCFor)(cmdsx)
 
           case CForBegin(info, index, min, extent, stride) =>
-            val cFor = fir.CFor(convert(info), convert(index, ctx), min, extent, stride,
+            val cFor = fir.CFor(convert(info),
+                                convert(index, ctx),
+                                convert(min, ctx),
+                                convert(extent, ctx),
+                                convert(stride, ctx),
                                 fir.EmptyStmt)
             val frameCFor = CForFrame(cFor, acc)
             rec(Queue.empty, scope, frameCFor +: scopeCFor)(cmds.tail)
