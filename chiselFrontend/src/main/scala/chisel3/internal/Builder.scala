@@ -181,7 +181,7 @@ private[chisel3] class DynamicContext() {
   // Used to distinguish between no Module() wrapping, multiple wrappings, and rewrapping
   var readyForModuleConstr: Boolean = false
   var whenDepth: Int = 0 // Depth of when nesting
-  var cForDepth: Int = 0 // Depth of cFor nesting
+  var loopDepth: Int = 0 // Depth of loop nesting
   var currentClockAndReset: Option[ClockAndReset] = None
   val errors = new ErrorLog
   val namingStack = new internal.naming.NamingStack
@@ -239,9 +239,9 @@ private[chisel3] object Builder {
     dynamicContext.whenDepth = target
   }
 
-  def cForDepth: Int = dynamicContext.cForDepth
-  def cForDepth_=(target: Int): Unit = {
-    dynamicContext.cForDepth = target
+  def loopDepth: Int = dynamicContext.loopDepth
+  def loopDepth_=(target: Int): Unit = {
+    dynamicContext.loopDepth = target
   }
 
   def currentClockAndReset: Option[ClockAndReset] = dynamicContext.currentClockAndReset

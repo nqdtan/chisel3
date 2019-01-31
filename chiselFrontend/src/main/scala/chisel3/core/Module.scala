@@ -38,7 +38,7 @@ object Module extends SourceInfoDoc {
 
     val parent = Builder.currentModule
     val whenDepth: Int = Builder.whenDepth
-    val cForDepth: Int = Builder.cForDepth
+    val loopDepth: Int = Builder.loopDepth
 
     // Save then clear clock and reset to prevent leaking scope, must be set again in the Module
     val clockAndReset: Option[ClockAndReset] = Builder.currentClockAndReset
@@ -48,15 +48,15 @@ object Module extends SourceInfoDoc {
     //   - set currentModule
     //   - unset readyForModuleConstr
     //   - reset whenDepth to 0
-    //   - reset cForDepth to 0
+    //   - reset loopDepth to 0
     //   - set currentClockAndReset
     val module: T = bc  // bc is actually evaluated here
 
     if (Builder.whenDepth != 0) {
       throwException("Internal Error! when() scope depth is != 0, this should have been caught!")
     }
-    if (Builder.cForDepth != 0) {
-      throwException("Internal Error! cFor() scope depth is != 0, this should have been caught!")
+    if (Builder.loopDepth != 0) {
+      throwException("Internal Error! loop() scope depth is != 0, this should have been caught!")
     }
 
     if (Builder.readyForModuleConstr) {
@@ -66,7 +66,7 @@ object Module extends SourceInfoDoc {
     }
     Builder.currentModule = parent // Back to parent!
     Builder.whenDepth = whenDepth
-    Builder.cForDepth = cForDepth
+    Builder.loopDepth = loopDepth
     Builder.currentClockAndReset = clockAndReset // Back to clock and reset scope
 
     val component = module.generateComponent()
@@ -136,7 +136,7 @@ abstract class BaseModule extends HasId {
 
   Builder.currentModule = Some(this)
   Builder.whenDepth = 0
-  Builder.cForDepth = 0
+  Builder.loopDepth = 0
 
   //
   // Module Construction Internals

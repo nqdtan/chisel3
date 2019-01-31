@@ -92,14 +92,10 @@ private class Emitter(circuit: Circuit) {
         // Chisel otherwise: ends all FIRRTL associated a Chisel when, resetting indent level
         for (i <- 0 until o.firrtlDepth) { unindent() }
         s"skip"
-      case c: CForBegin =>
+      case l: LoopBegin =>
         indent()
-        val index = s"${c.index.fullName(ctx)}"
-        val min = s"${c.min.fullName(ctx)}"
-        val extent = s"${c.extent.fullName(ctx)}"
-        val stride = s"${c.stride.fullName(ctx)}"
-        s"cFor ${index} <- (${min}, ${min} + ${extent}, ${stride}) :"
-      case c: CForEnd =>
+        s"loop ${l.pred.fullName(ctx)} :"
+      case l: LoopEnd =>
         unindent()
         s"skip"
     }

@@ -274,8 +274,8 @@ case class WhenBegin(sourceInfo: SourceInfo, pred: Arg) extends Command
 case class WhenEnd(sourceInfo: SourceInfo, firrtlDepth: Int, hasAlt: Boolean = false) extends Command
 case class AltBegin(sourceInfo: SourceInfo) extends Command
 case class OtherwiseEnd(sourceInfo: SourceInfo, firrtlDepth: Int) extends Command
-case class CForBegin(sourceInfo: SourceInfo, index: Arg, min: Arg, extent: Arg, stride: Arg) extends Command
-case class CForEnd(sourceInfo: SourceInfo, firrtlDepth: Int) extends Command
+case class LoopBegin(sourceInfo: SourceInfo, pred: Arg) extends Command
+case class LoopEnd(sourceInfo: SourceInfo, firrtlDepth: Int) extends Command
 case class Connect(sourceInfo: SourceInfo, loc: Node, exp: Arg) extends Command
 case class BulkConnect(sourceInfo: SourceInfo, loc1: Node, loc2: Node) extends Command
 case class Attach(sourceInfo: SourceInfo, locs: Seq[Node]) extends Command
